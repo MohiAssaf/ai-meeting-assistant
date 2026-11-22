@@ -83,9 +83,14 @@ h3 {
   transition: border-color 0.15s;
 }
 
-.dropzone:hover,
+.dropzone:hover:not(:disabled),
 .upload.is-dragging .dropzone {
   border-color: var(--accent);
+}
+
+.dropzone:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .dropzone-icon {
@@ -200,7 +205,7 @@ h3 {
   color: var(--text);
 }
 
-.button.secondary:hover {
+.button.secondary:hover:not(:disabled) {
   border-color: var(--text-muted);
 }
 
@@ -225,6 +230,42 @@ h3 {
   flex-wrap: wrap;
   gap: 8px 16px;
   margin-top: 16px;
+}
+
+/* Upload status */
+.upload-status .muted,
+.upload-status .error,
+.success {
+  margin: 12px 0 0;
+}
+
+.success {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--success-soft);
+}
+
+.success-title {
+  color: var(--success);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.success-details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 16px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.success-details dt {
+  color: var(--text-muted);
+}
+
+.success-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Results */

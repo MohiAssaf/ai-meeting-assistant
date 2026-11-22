@@ -13,16 +13,18 @@ import {
 interface AudioUploadProps {
   file: File | null
   onFileChange: (file: File | null) => void
+  // Prevents changing the file, e.g. while it is being uploaded.
+  disabled?: boolean
 }
 
 // File selection: picker, drag-and-drop, validation feedback, and the selected-file view.
-function AudioUpload({ file, onFileChange }: AudioUploadProps) {
+function AudioUpload({ file, onFileChange, disabled = false }: AudioUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
 
   function handleFiles(files: FileList | null) {
-    if (!files || files.length === 0) return
+    if (disabled || !files || files.length === 0) return
     if (files.length > 1) {
       setError('Please select one recording at a time.')
       return
@@ -39,6 +41,7 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
   }
 
   function openFilePicker() {
+    if (disabled) return
     inputRef.current?.click()
   }
 
@@ -49,8 +52,13 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
   }
 
   function handleDragOver(event: DragEvent<HTMLDivElement>) {
-    // preventDefault marks this element as a valid drop target.
+    // preventDefault marks this element as a valid drop target. It is still
+    // called when disabled, so a dropped file isn't opened in a new tab.
     event.preventDefault()
+    if (disabled) {
+      event.dataTransfer.dropEffect = 'none'
+      return
+    }
     if (!isDragging) setIsDragging(true)
   }
 
@@ -67,6 +75,7 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
   }
 
   function handleRemove() {
+    if (disabled) return
     setError(null)
     onFileChange(null)
   }
@@ -103,10 +112,20 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
           <AudioPreview key={`${file.name}-${file.size}-${file.lastModified}`} file={file} />
 
           <div className="file-actions">
-            <button type="button" className="button secondary" onClick={openFilePicker}>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={openFilePicker}
+              disabled={disabled}
+            >
               Replace
             </button>
-            <button type="button" className="button secondary danger" onClick={handleRemove}>
+            <button
+              type="button"
+              className="button secondary danger"
+              onClick={handleRemove}
+              disabled={disabled}
+            >
               Remove
             </button>
           </div>
@@ -116,6 +135,7 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
           type="button"
           className="dropzone"
           onClick={openFilePicker}
+          disabled={disabled}
           aria-describedby="upload-hint"
         >
           <span className="dropzone-icon" aria-hidden="true">↑</span>
