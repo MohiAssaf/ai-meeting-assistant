@@ -1,0 +1,26 @@
+# Frontend
+node_modules/
+dist/
+coverage/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Local recordings and results
+recordings/
+results/
+
+# Editor and system
+.DS_Store
+.idea/
+
+# Logs
+*.log
