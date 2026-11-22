@@ -50,4 +50,4 @@ async def validate_audio_upload(
         )
 
     finally:
-        await file.close()
+        await file.seek(0)

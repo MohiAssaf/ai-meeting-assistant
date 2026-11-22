@@ -6,3 +6,8 @@ FRONTEND_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
+WHISPER_MODEL_SIZE = "base"
+WHISPER_DEVICE = "cpu"
+WHISPER_COMPUTE_TYPE = "int8"
+WHISPER_BEAM_SIZE = 5
