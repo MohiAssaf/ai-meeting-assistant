@@ -45,6 +45,6 @@ def transcribe_audio(
 
     return TranscriptResult(
         text=transcript,
-        language=language,
+        language=info.language,
         duration_seconds=info.duration
     )
