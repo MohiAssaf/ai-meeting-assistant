@@ -1,40 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
-
-const ALLOWED_EXTENSIONS = ['.mp3', '.wav', '.m4a']
-const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB
-const ACCEPT = '.mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a'
+import AudioPreview from './AudioPreview'
+import {
+  ACCEPTED_FILE_TYPES,
+  MAX_FILE_SIZE_MB,
+  SUPPORTED_FORMATS_LABEL,
+  formatFileSize,
+  getFileExtension,
+  validateAudioFile,
+} from '../utils/audioFile'
 
 interface AudioUploadProps {
   file: File | null
   onFileChange: (file: File | null) => void
 }
 
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function getExtension(name: string): string {
-  const dot = name.lastIndexOf('.')
-  return dot === -1 ? '' : name.slice(dot).toLowerCase()
-}
-
-// Returns an error message, or null if the file is acceptable.
-function validateFile(file: File): string | null {
-  if (!ALLOWED_EXTENSIONS.includes(getExtension(file.name))) {
-    return 'Unsupported file type. Please choose an MP3, WAV, or M4A file.'
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    return `File is ${formatSize(file.size)} — the limit is 20 MB.`
-  }
-  if (file.size === 0) {
-    return 'The selected file is empty.'
-  }
-  return null
-}
-
+// File selection: picker, drag-and-drop, validation feedback, and the selected-file view.
 function AudioUpload({ file, onFileChange }: AudioUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +28,7 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
       return
     }
     const candidate = files[0]
-    const message = validateFile(candidate)
+    const message = validateAudioFile(candidate)
     if (message) {
       // Keep any previously selected valid file.
       setError(message)
@@ -100,7 +81,7 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
       <input
         ref={inputRef}
         type="file"
-        accept={ACCEPT}
+        accept={ACCEPTED_FILE_TYPES}
         onChange={handleInputChange}
         className="visually-hidden"
         tabIndex={-1}
@@ -114,7 +95,7 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
             <div className="file-meta">
               <p className="file-name" title={file.name}>{file.name}</p>
               <p className="muted">
-                {formatSize(file.size)} · {getExtension(file.name).slice(1).toUpperCase()}
+                {formatFileSize(file.size)} · {getFileExtension(file.name).slice(1).toUpperCase()}
               </p>
             </div>
           </div>
@@ -142,7 +123,7 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
             Drag &amp; drop a recording or <span className="link">browse</span>
           </span>
           <span id="upload-hint" className="muted">
-            MP3, WAV, or M4A · up to 20 MB
+            {SUPPORTED_FORMATS_LABEL} · up to {MAX_FILE_SIZE_MB} MB
           </span>
         </button>
       )}
@@ -150,48 +131,6 @@ function AudioUpload({ file, onFileChange }: AudioUploadProps) {
       {error && (
         <p className="error" role="alert">
           {error}
-        </p>
-      )}
-    </div>
-  )
-}
-
-interface AudioPreviewProps {
-  file: File
-}
-
-function AudioPreview({ file }: AudioPreviewProps) {
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const [previewFailed, setPreviewFailed] = useState(false)
-
-  // Create a temporary blob URL for the file and release it when the file
-  // changes or the component unmounts, so the browser can free the memory.
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-    const url = URL.createObjectURL(file)
-    audio.src = url
-    return () => {
-      audio.removeAttribute('src')
-      audio.load()
-      URL.revokeObjectURL(url)
-    }
-  }, [file])
-
-  return (
-    <div className="preview">
-      <audio
-        ref={audioRef}
-        controls
-        preload="metadata"
-        onError={() => setPreviewFailed(true)}
-        hidden={previewFailed}
-        aria-label={`Preview of ${file.name}`}
-      />
-      {previewFailed && (
-        <p className="notice">
-          Your browser can’t preview this audio format, but the file is still selected and can be
-          processed.
         </p>
       )}
     </div>

@@ -19,7 +19,7 @@ function App() {
       </header>
 
       <main>
-        <section aria-labelledby="upload-heading" className="upload-section">
+        <section aria-labelledby="upload-heading">
           <h2 id="upload-heading">Recording</h2>
           <AudioUpload file={selectedFile} onFileChange={setSelectedFile} />
 
